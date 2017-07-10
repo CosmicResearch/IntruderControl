@@ -11,19 +11,19 @@ bool Imu::initSensors()
   if(!accel.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
+    //Serial.println(F("Ooops, no LSM303 detected ... Check your wiring!"));
     return false;
   }
   if(!mag.begin())
   {
     /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
+    //Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
     return false;
   }
   if(!bmp.begin())
   {
     /* There was a problem detecting the BMP180 ... check your connections */
-    Serial.println("Ooops, no BMP180 detected ... Check your wiring!");
+    //Serial.println("Ooops, no BMP180 detected ... Check your wiring!");
     return false;
   }
   return true;
@@ -39,7 +39,7 @@ bool Imu::getOrientation(float& roll, float& pitch){
     pitch = orientation.pitch;
     return true;
   }
-  Serial.println("Error in communication with Acceletometer (getOrientation(float& roll, float& pitch))");
+  //Serial.println("Error in communication with Acceletometer (getOrientation(float& roll, float& pitch))");
   return false;
 }
 
@@ -53,14 +53,14 @@ bool Imu::getHeading(float& heading){
     heading = orientation.heading;
     return true;
   }
-  Serial.println("Error in communication with Magnetometer (getHeading(float& heading))");
+  //Serial.println("Error in communication with Magnetometer (getHeading(float& heading))");
   return false;
 }
 
 bool Imu::getAltitudeAndTemperature(float& altitude, float& temperature){
   sensors_event_t bmp_event;
   float seaLevelPressure = SENSORS_PRESSURE_SEALEVELHPA;
-  
+
   bmp.getEvent(&bmp_event);
   if (bmp_event.pressure)
   {
@@ -73,6 +73,6 @@ bool Imu::getAltitudeAndTemperature(float& altitude, float& temperature){
     temperature = t;
     return true;
   }
-  Serial.println("Error in communication with Barometer (getAltitudeAndTemperature)");
+  //Serial.println("Error in communication with Barometer (getAltitudeAndTemperature)");
   return false;
 }
