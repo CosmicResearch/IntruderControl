@@ -1,17 +1,15 @@
-
-
 #include <SD.h>
 #include <SPI.h>
 #include <Imu.h>
 
 #define CHIP_SELECT 10
 #define LED_PIN_ERROR 3
-#define LED_PIN_OK 4
 File IMUdata, Eventdata;
 
-float roll, pitch, heading, altitude, temperature;
+float roll, pitch, heading, altitude, temperature, offsetAltitude, oldAltitude;
 Imu imu;
-
+int i,j;
+boolean ascending, descending;
 
 void setup() {
 
@@ -20,12 +18,19 @@ void setup() {
      Serial.begin(115200);
      Serial.println("Initializing...");
      */
-     pinMode(LED_PIN, OUTPUT);
-     SD.begin(CHIP_SELECT);
+     pinMode(CHIP_SELECT, OUTPUT);
+     pinMode(LED_PIN_ERROR, OUTPUT);
+     if(!SD.begin(CHIP_SELECT)){
+      while(1){
+          digitalWrite(LED_PIN_ERROR, HIGH);
+          delay(500);
+          digitalWrite(LED_PIN_ERROR, LOW);
+          delay(500);
+        }
+     }
    
      Eventdata=SD.open("EV_DATA.txt", FILE_WRITE);
-     IMUdata=SD.open("IMU_DATA.txt", FILE_WRITE);
-     pinMode(CHIP_SELECT, OUTPUT);
+     IMUdata=SD.open("IMU_DATA.csv", FILE_WRITE);
      
      //Serial.println("Fitxers creats");
      
@@ -43,11 +48,37 @@ void setup() {
           delay(500);
         }
      }
+
+
+
+     
      //Serial.println("IMU inicializada");
      Eventdata.print(millis());
      Eventdata.println("- IMU inicializada");
      Eventdata.flush();
-     delay(1000);
+     IMUdata.println("Time Roll Pitch Heading Altitude Temperature");
+
+     i=0;
+     while(i<10){
+        if(!imu.getAltitudeAndTemperature(altitude, temperature)){
+        //Serial.println("- Ha habido un problema obteniendo la altura y la temperatura")
+          Eventdata.print(millis());
+          Eventdata.println("- Ha habido un problema obteniendo la altura y la temperatura");
+          while(1){
+            digitalWrite(LED_PIN_ERROR, HIGH);
+            delay(500);
+            digitalWrite(LED_PIN_ERROR, LOW);
+            delay(500);
+          }
+        }
+        offsetAltitude+=altitude;
+        i++; 
+     }
+     offsetAltitude=(offsetAltitude/i);
+     i=0;
+     j=0;
+     ascending=false;
+     descending=false;
 }
 
 
@@ -87,9 +118,30 @@ void loop() {
         }
       }
 
+   if((altitude-offsetAltitude)<oldAltitude && !descending){
+    j=0;
+    i++;
+    if(i==10){
+      Eventdata.print(millis());
+      Eventdata.println("- Hora de apogeo");
+      descending=true;
+      ascending=false;
+    }
+   }
+   if((altitude-offsetAltitude)>oldAltitude && !ascending){
+    i=0;
+    j++;
+    if(j==10){
+      Eventdata.print(millis());
+      Eventdata.println("- Hora de despegue");
+      ascending=true;
+      descending=false;
+    } 
+   }
   IMUdata.print(millis());
-  IMUdata.println("- Roll: " + (String) roll+ ", Pitch: " +  (String) pitch + ", Head: " + (String) heading + ", Alt: " + (String) altitude + ", Temp: " + (String) temperature);
+  IMUdata.println(" "+ (String) roll+ " " +  (String) pitch + " " + (String) heading + " " + (String) (altitude-offsetAltitude) + " " + (String) temperature);
   IMUdata.flush();
-  
+  oldAltitude=(altitude-offsetAltitude);
+    
 }
 
