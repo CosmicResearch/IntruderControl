@@ -31,19 +31,19 @@ class CamPoller(threading.Thread):
     
   def run(self):
 	global camera
-	for i in range (1,100):
-	 	if not os.path.exists(path+'vid_%04d.h264' % i):
+	for i in range (0,999):
+	 	if not os.path.exists(path+'vid_%03d.h264' % i):
 			break
 		i = i + 1
 	GPIO.output(led,GPIO.LOW)
-	camera.start_recording(path+'vid_%04d.h264' % i)
+	camera.start_recording(path+'vid_%03d.h264' % i)
 	try:
 		camera.wait_recording(10)
 	except PiCameraError:
 		GPIO.output(led,PIO.HIGH)
 	while self.running:
 		i=i+1
-		camera.split_recording(path+'vid_%04d.h264' % i)
+		camera.split_recording(path+'vid_%03d.h264' % i)
 		try:
 			camera.wait_recording(duration)
 		except PiCameraError:
