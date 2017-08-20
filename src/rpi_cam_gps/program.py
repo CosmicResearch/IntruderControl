@@ -1,5 +1,5 @@
 """
-    Guidance Computer Software
+    Ansaris (Intruder) Software
     Copyright (C) 2016 Associacio Cosmic Research
 
     This program is free software: you can redistribute it and/or modify
@@ -39,6 +39,7 @@ class GpsPoller(threading.Thread):
     while gpsp.running:
       gpsd.next()
 
+	  
 if __name__ == '__main__':
   global cam
   gpsfile = open("/home/pi/GPS_log.csv", "a")
