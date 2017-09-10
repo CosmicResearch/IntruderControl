@@ -8,7 +8,8 @@ File IMUdata, Eventdata;
 
 float roll, pitch, heading, altitude, temperature, offsetAltitude, oldAltitude;
 Imu imu;
-int i;
+int i,j;
+boolean ascending, descending;
 
 void setup() {
 
@@ -29,13 +30,8 @@ void setup() {
      }
    
      Eventdata=SD.open("EV_DATA.txt", FILE_WRITE);
-     if(SD.exists("IMU_DATA.csv")){
-          IMUdata=SD.open("IMU_DATA.csv", FILE_WRITE);
-          IMU_data.println("- - - - - - -");
-     }
-     else{
-          IMUdata=SD.open("IMU_DATA.csv", FILE_WRITE);
-     }
+     IMUdata=SD.open("IMU_DATA.csv", FILE_WRITE);
+     
      //Serial.println("Fitxers creats");
      
      Eventdata.print(millis());
@@ -60,7 +56,7 @@ void setup() {
      Eventdata.print(millis());
      Eventdata.println("- IMU inicializada");
      Eventdata.flush();
-     IMUdata.println("Time Roll Pitch Heading Altitude Temperature Apogee");
+     IMUdata.println("Time Roll Pitch Heading Altitude Temperature");
 
      i=0;
      while(i<10){
@@ -79,6 +75,10 @@ void setup() {
         i++; 
      }
      offsetAltitude=(offsetAltitude/i);
+     i=0;
+     j=0;
+     ascending=false;
+     descending=false;
 }
 
 
@@ -117,12 +117,31 @@ void loop() {
           delay(500);
         }
       }
-   if((altitude-offsetAltitude)>oldAltitude){
-      apogee=altitude-offsetAltitude;
+
+   if((altitude-offsetAltitude)<oldAltitude && !descending){
+    j=0;
+    i++;
+    if(i==10){
+      Eventdata.print(millis());
+      Eventdata.println("- Hora de apogeo");
+      descending=true;
+      ascending=false;
+    }
+   }
+   if((altitude-offsetAltitude)>oldAltitude && !ascending){
+    i=0;
+    j++;
+    if(j==10){
+      Eventdata.print(millis());
+      Eventdata.println("- Hora de despegue");
+      ascending=true;
+      descending=false;
+    } 
    }
   IMUdata.print(millis());
-  IMUdata.println(" "+ (String) roll+ " " +  (String) pitch + " " + (String) heading + " " + (String) (altitude-offsetAltitude) + " " + (String) temperature + " "+ (String));
+  IMUdata.println(" "+ (String) roll+ " " +  (String) pitch + " " + (String) heading + " " + (String) (altitude-offsetAltitude) + " " + (String) temperature);
   IMUdata.flush();
+  oldAltitude=(altitude-offsetAltitude);
     
 }
 
